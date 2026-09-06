@@ -1,0 +1,41 @@
+name: Build UniversityShield Expert for Windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: Test expert engine
+        run: python test_engine.py
+
+      - name: Build executable
+        run: >-
+          pyinstaller --noconfirm --clean --onefile --windowed
+          --name UniversityShield_Expert
+          --add-data "knowledge_base.json;."
+          main.py
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UniversityShield_Expert-Windows
+          path: dist/UniversityShield_Expert.exe
+          if-no-files-found: error
+          retention-days: 7
